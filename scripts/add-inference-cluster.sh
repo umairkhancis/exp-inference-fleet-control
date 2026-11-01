@@ -44,6 +44,11 @@ CLUSTER_MEMORY_MB="${CLUSTER_MEMORY_MB:-4096}"
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
 MANIFEST_DIR="$REPO_ROOT/manifests/$CLUSTER_NAME"
+# Manifests may live under a team subfolder (e.g. manifests/platform-team/<name>).
+if [ ! -d "$MANIFEST_DIR" ]; then
+  FOUND=$(find "$REPO_ROOT/manifests" -mindepth 2 -maxdepth 2 -type d -name "$CLUSTER_NAME" 2>/dev/null | head -1)
+  [ -n "$FOUND" ] && MANIFEST_DIR="$FOUND"
+fi
 
 log() { printf '\n==> %s\n' "$*"; }
 

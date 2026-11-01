@@ -1,6 +1,6 @@
 # Understanding `inference-gateway.yaml` (in simple language)
 
-This explains `manifests/inference-cluster-1/inference-gateway.yaml`, the
+This explains `manifests/platform-team/inference-cluster-1/inference-gateway.yaml`, the
 manifest that gives the fleet a **front door** for inference requests. First
 a glossary of the terms involved, then the file itself, field by field, using
 only those terms.

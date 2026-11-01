@@ -1,6 +1,6 @@
 # Understanding `inference-class.yaml` (in simple language)
 
-This explains `manifests/inference-cluster-1/inference-class.yaml`, one small
+This explains `manifests/platform-team/inference-cluster-1/inference-class.yaml`, one small
 piece of the Modelplane setup. First a glossary of the terms involved, then
 the file itself, field by field, using only those terms.
 
