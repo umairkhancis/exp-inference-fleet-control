@@ -31,7 +31,9 @@ CLUSTER_NAME="${1:-${CLUSTER_NAME:-inference-cluster-1}}"
 CONTROL_CONTEXT="${CONTROL_CONTEXT:-modelplane}"
 POOL_NAME="${POOL_NAME:-cpu-pool}"
 SECRET_NAME="${CLUSTER_NAME}-kubeconfig"
-SECRET_NAMESPACE="${SECRET_NAMESPACE:-crossplane-system}"
+# Per the InferenceCluster CRD: "The Secret must exist in the
+# modelplane-system namespace" (spec.cluster.existing.secretRef).
+SECRET_NAMESPACE="${SECRET_NAMESPACE:-modelplane-system}"
 # VM sizing for the CPU-only PoC cluster (see manifests/<name>/README.md).
 VM_CPUS="${VM_CPUS:-4}"
 VM_MEMORY="${VM_MEMORY:-6G}"

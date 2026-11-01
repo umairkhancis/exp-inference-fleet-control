@@ -41,7 +41,8 @@ to the cluster, which is why it must never be committed to git.
 A Kubernetes object for storing sensitive data (passwords, keys,
 kubeconfigs). We put the worker cluster's kubeconfig into a Secret on the
 control cluster — created by hand with `kubectl` (see the README), not from a
-file in this repo.
+file in this repo. The InferenceCluster CRD requires it to live in the
+`modelplane-system` namespace.
 
 **secretRef**
 A pointer *to* a Secret: "look up the Secret with this name, and read this
