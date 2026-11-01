@@ -119,15 +119,20 @@ The **device claim** — the workload side of the DRA handshake:
 - **`selectors[0].cel`** — the capability filter:
 
   ```
-  device.capacity["dra.cpu"].cpu.compareTo(quantity("3")) >= 0
+  device.capacity["dra.cpu"].cpu.compareTo(quantity("2")) >= 0
   ```
 
-  "The device's published `cpu` capacity must be ≥ 3 cores." In our fleet,
-  `cpu-small-byo` publishes 3 and `cpu-micro-byo` publishes 2 — so the
-  **scheduler** can only place this replica on **inference-cluster-1**.
-  Lowering `"3"` to `"2"` would make both clusters eligible. This one line
-  is the live demonstration that the two clusters' different capabilities
-  actually steer scheduling.
+  "The device's published `cpu` capacity must be ≥ 2 cores." A hard-won
+  lesson from this PoC: the expression is evaluated **twice, against two
+  different numbers**. First Modelplane's **scheduler** checks it against
+  the *declared* InferenceClass capacity (`cpu-small-byo` = 3,
+  `cpu-micro-byo` = 2) to choose a cluster. Then the chosen node's DRA
+  allocator checks it again — against the *real* device the `dra.cpu`
+  driver discovered, which on these VMs is **2 cores**, regardless of what
+  the class declared. We originally wrote `"3"`: Modelplane dutifully
+  picked cluster-1 (3 ≥ 3), but the node could never allocate (2 < 3) and
+  the pod hung Pending forever. The filter must pass **both** levels, so
+  declare classes honestly — the class is a promise the driver has to keep.
 
 ### `template.spec.containers[0]` — the engine container
 
@@ -146,10 +151,13 @@ The **device claim** — the workload side of the DRA handshake:
   recipe's CPU-friendly value.
 - **`env: VLLM_CPU_KVCACHE_SPACE: "1"`** — give the **KV cache** 1 GiB of
   RAM (recipe used 4 on an 8-vCPU cloud node).
-- **`resources`** — **requests/limits**: 2 cores and 2 GiB requested, capped
-  at 2 cores. Why not all 3 claimable cores? Same reason the recipe leaves
-  one: the node's DaemonSets (gateway, monitoring, DRA driver) need CPU too,
-  and a whole-node request would starve them.
+- **`resources`** — **requests/limits**: 1 core and 2 GiB requested, with no
+  CPU limit so vLLM can burst into idle cores. Why so little? The 4-core
+  node already carries ~2.6 cores of platform pod requests (gateway,
+  monitoring, DRA driver, control plane), so anything above ~1.3 cores
+  never schedules — our original 2-core request sat Pending on exactly
+  this. The device claim and the pod request are separate budgets: the
+  claim picks the cluster, the request has to fit on the node.
 
 ---
 

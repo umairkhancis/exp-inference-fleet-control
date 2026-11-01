@@ -2,10 +2,13 @@
 # qwen2.5-0.5b-cpu recipe for this PoC fleet:
 #   - multi-arch image tag (v0.32.0 includes arm64 — the recipe's
 #     v0.32.0-x86_64 won't run on the Apple Silicon multipass VMs)
-#   - the CEL selector requires >= 3 claimable cores, so the scheduler can
-#     only place this on inference-cluster-1 (cpu-small-byo, 3 cores) and
-#     never on inference-cluster-2 (cpu-micro-byo, 2 cores): capability-based
-#     scheduling in action. Lower it to "2" to make cluster-2 eligible.
+#   - the CEL selector is evaluated twice: by Modelplane's scheduler against
+#     the DECLARED InferenceClass capacity (cpu-small-byo=3, cpu-micro-byo=2)
+#     to pick a cluster, and by the node's DRA allocator against the REAL
+#     device the dra.cpu driver publishes (2 cores on these VMs). It must
+#     pass both, so it asks for >= 2. (A ">= 3" demand picks cluster-1 by
+#     class but then never allocates on the node — the class declaration
+#     overstates what the driver actually found.)
 #   - sized for the small VM: 2 of the node's cores, 2048-token context,
 #     1 GiB KV cache.
 apiVersion: modelplane.ai/v1alpha1
@@ -27,7 +30,7 @@ spec:
               count: 1
               selectors:
               - cel: |
-                  device.capacity["dra.cpu"].cpu.compareTo(quantity("3")) >= 0
+                  device.capacity["dra.cpu"].cpu.compareTo(quantity("2")) >= 0
           template:
             spec:
               containers:
@@ -41,9 +44,11 @@ spec:
                 env:
                 - name: VLLM_CPU_KVCACHE_SPACE
                   value: "1"
+                # Request 1 core: the 4-core node already carries ~2.6 cores
+                # of platform pod requests (gateway, monitoring, DRA driver,
+                # control plane), so a 2-core request never schedules. No CPU
+                # limit — vLLM may burst into whatever is idle.
                 resources:
                   requests:
-                    cpu: "2"
+                    cpu: "1"
                     memory: 2Gi
-                  limits:
-                    cpu: "2"
