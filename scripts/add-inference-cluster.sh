@@ -73,15 +73,28 @@ kubectl --context "$CLUSTER_NAME" label nodes --all --overwrite \
 
 # --------------------------------------------------------- 2b. MetalLB ------
 # The gateway needs a LoadBalancer implementation to get an external address.
-# --force skips minikube's interactive "3rd party addon" confirmation, which
-# otherwise hangs forever when stdin is not a TTY; the kubectl check makes
-# re-runs skip the enable entirely.
+# `multipass exec` of this command can spin forever even after the enable
+# succeeds inside the VM (observed without a TTY), so never trust it to
+# return: run it in the background, poll the cluster API for the MetalLB
+# controller, then kill the exec. --force skips minikube's "3rd party
+# addon" confirmation.
 log "Enabling MetalLB addon and applying its address pool"
 if kubectl --context "$CLUSTER_NAME" -n metallb-system get deploy controller >/dev/null 2>&1; then
   log "MetalLB already enabled — skipping"
 else
-  multipass exec "$CLUSTER_NAME" -- sg docker -c "minikube addons enable metallb --force" >/dev/null
+  multipass exec "$CLUSTER_NAME" -- sg docker -c \
+    "minikube addons enable metallb --force" >/dev/null 2>&1 &
+  ENABLE_PID=$!
+  for _ in $(seq 1 30); do
+    kubectl --context "$CLUSTER_NAME" -n metallb-system get deploy controller >/dev/null 2>&1 && break
+    sleep 10
+  done
+  kill "$ENABLE_PID" 2>/dev/null || true
+  wait "$ENABLE_PID" 2>/dev/null || true
+  kubectl --context "$CLUSTER_NAME" -n metallb-system get deploy controller >/dev/null \
+    || { echo "ERROR: MetalLB controller did not appear within 5m." >&2; exit 1; }
 fi
+kubectl --context "$CLUSTER_NAME" -n metallb-system rollout status deploy/controller --timeout=180s
 kubectl --context "$CLUSTER_NAME" apply -f "$MANIFEST_DIR/metallb-config.yaml"
 
 # ------------------------------------------------ 3a. kubeconfig Secret -----
