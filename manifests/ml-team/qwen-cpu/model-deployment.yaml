@@ -41,6 +41,13 @@ spec:
                 - --served-model-name=$(MODELPLANE_SERVED_MODEL_NAME)
                 - --max-model-len=2048
                 - --block-size=32
+                # Skip torch.compile. The compile warmup's memory spike
+                # (worker RSS >3.3 GiB) plus the KV cache exhausted the 7G
+                # VM and thrashed the node (load >200), and the long warmup
+                # kept tripping the startup probe. Eager mode starts in
+                # seconds at a fraction of the memory; slightly slower
+                # tokens/s is fine for a CPU PoC.
+                - --enforce-eager
                 env:
                 - name: VLLM_CPU_KVCACHE_SPACE
                   value: "1"
