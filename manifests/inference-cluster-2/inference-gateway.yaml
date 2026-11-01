@@ -1,0 +1,11 @@
+# Front door for inference requests served by inference-cluster-2.
+# Named public-2 because gateway names are unique on the control cluster
+# (inference-cluster-1 already owns "public").
+# PoC setup: no TLS, no auth — plain-HTTP endpoints in the status.
+# Do not expose beyond the local machine in this form.
+apiVersion: modelplane.ai/v1alpha1
+kind: InferenceGateway
+metadata:
+  name: public-2
+spec:
+  clusterName: inference-cluster-2

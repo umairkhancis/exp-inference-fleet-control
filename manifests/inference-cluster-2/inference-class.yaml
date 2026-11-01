@@ -1,0 +1,20 @@
+# CPU-only hardware class for the bring-your-own inference-cluster-2.
+# Identical to cpu-small-byo (inference-cluster-1) except for ONE thing:
+# it publishes 2 claimable cores instead of 3. This is the deliberate
+# capability difference that proves two fleet clusters can offer different
+# hardware profiles while running on identical multipass/minikube VMs.
+# No `provisioning` block: BYO hardware that already exists.
+apiVersion: modelplane.ai/v1alpha1
+kind: InferenceClass
+metadata:
+  name: cpu-micro-byo
+spec:
+  description: "Multipass VM, 4 vCPUs, no GPU (2 claimable cores — reduced vs cpu-small-byo's 3)"
+  devices:
+  - name: cpu
+    claim: DRA
+    driver: dra.cpu
+    deviceClassName: dra.cpu
+    count: 1
+    capacity:
+      cpu: { value: "2" }

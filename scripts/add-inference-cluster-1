@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# One-command setup for the first fleet cluster:
+#   ./scripts/add-inference-cluster-1
+exec "$(dirname "${BASH_SOURCE[0]}")/add-inference-cluster.sh" inference-cluster-1
