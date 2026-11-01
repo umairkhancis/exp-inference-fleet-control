@@ -37,6 +37,13 @@ SECRET_NAMESPACE="${SECRET_NAMESPACE:-modelplane-system}"
 # VM sizing for the CPU-only PoC cluster. 6 CPUs / 7G leaves real headroom
 # for an engine pod next to the platform pods: the dra.cpu driver reserves
 # 2 CPUs for the system, so this publishes 4 claimable cores per node.
+#
+# NOTE: CLUSTER_MEMORY_MB is baked into the minikube DOCKER CONTAINER's
+# cgroup at creation. Resizing the VM later does NOT lift it — the node
+# then page-thrashes inside the old limit while the new RAM sits idle
+# (kubelet still advertises the full VM, so k8s overschedules the cgroup).
+# After any VM resize, also run, inside the VM:
+#   docker update --memory <N>g --memory-swap <N>g --cpus <C> minikube
 VM_CPUS="${VM_CPUS:-6}"
 VM_MEMORY="${VM_MEMORY:-7G}"
 VM_DISK="${VM_DISK:-30G}"
