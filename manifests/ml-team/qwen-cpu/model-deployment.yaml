@@ -44,12 +44,13 @@ spec:
                 env:
                 - name: VLLM_CPU_KVCACHE_SPACE
                   value: "1"
-                # The DRA claim pins this pod to 1 exclusive core, but vLLM
-                # spawns OpenMP threads for every core it SEES (all 6) —
-                # dozens of threads thrashing one core collapsed the node.
-                # Tell vLLM its real budget.
+                # Give vLLM a bounded thread budget: enough to finish CPU
+                # warmup/compilation inside the startup-probe window (1
+                # thread was killed mid-warmup every ~7 min, looping
+                # forever), but far below the all-6-cores default that
+                # amplified the earlier cgroup thrash.
                 - name: OMP_NUM_THREADS
-                  value: "1"
+                  value: "3"
                 # Request 1 core: the 4-core node already carries ~2.6 cores
                 # of platform pod requests (gateway, monitoring, DRA driver,
                 # control plane), so a 2-core request never schedules. No CPU
