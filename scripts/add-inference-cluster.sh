@@ -73,8 +73,15 @@ kubectl --context "$CLUSTER_NAME" label nodes --all --overwrite \
 
 # --------------------------------------------------------- 2b. MetalLB ------
 # The gateway needs a LoadBalancer implementation to get an external address.
+# --force skips minikube's interactive "3rd party addon" confirmation, which
+# otherwise hangs forever when stdin is not a TTY; the kubectl check makes
+# re-runs skip the enable entirely.
 log "Enabling MetalLB addon and applying its address pool"
-multipass exec "$CLUSTER_NAME" -- sg docker -c "minikube addons enable metallb" >/dev/null
+if kubectl --context "$CLUSTER_NAME" -n metallb-system get deploy controller >/dev/null 2>&1; then
+  log "MetalLB already enabled — skipping"
+else
+  multipass exec "$CLUSTER_NAME" -- sg docker -c "minikube addons enable metallb --force" >/dev/null
+fi
 kubectl --context "$CLUSTER_NAME" apply -f "$MANIFEST_DIR/metallb-config.yaml"
 
 # ------------------------------------------------ 3a. kubeconfig Secret -----
