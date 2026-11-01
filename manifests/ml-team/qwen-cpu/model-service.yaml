@@ -1,0 +1,13 @@
+# Exposes qwen-cpu-demo through the fleet's gateways. The model name callers
+# use is "<namespace>/<service name>": ml-team/qwen-cpu.
+apiVersion: modelplane.ai/v1alpha1
+kind: ModelService
+metadata:
+  name: qwen-cpu
+  namespace: ml-team
+spec:
+  endpoints:
+  - name: qwen-cpu-demo
+    selector:
+      matchLabels:
+        modelplane.ai/deployment: qwen-cpu-demo

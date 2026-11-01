@@ -1,0 +1,7 @@
+# The ml-team's namespace on the CONTROL cluster. Model workload resources
+# (ModelDeployment, ModelService) live here; Modelplane schedules the actual
+# engine pods onto the fleet's inference clusters.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ml-team

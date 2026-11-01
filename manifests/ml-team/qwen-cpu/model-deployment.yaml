@@ -1,0 +1,49 @@
+# Qwen2.5-0.5B-Instruct served by vLLM on CPU, adapted from the official
+# qwen2.5-0.5b-cpu recipe for this PoC fleet:
+#   - multi-arch image tag (v0.32.0 includes arm64 — the recipe's
+#     v0.32.0-x86_64 won't run on the Apple Silicon multipass VMs)
+#   - the CEL selector requires >= 3 claimable cores, so the scheduler can
+#     only place this on inference-cluster-1 (cpu-small-byo, 3 cores) and
+#     never on inference-cluster-2 (cpu-micro-byo, 2 cores): capability-based
+#     scheduling in action. Lower it to "2" to make cluster-2 eligible.
+#   - sized for the small VM: 2 of the node's cores, 2048-token context,
+#     1 GiB KV cache.
+apiVersion: modelplane.ai/v1alpha1
+kind: ModelDeployment
+metadata:
+  name: qwen-cpu-demo
+  namespace: ml-team
+spec:
+  replicas: 1
+  template:
+    spec:
+      engines:
+      - name: qwen
+        members:
+        - role: Standalone
+          nodeSelector:
+            devices:
+            - name: cpu
+              count: 1
+              selectors:
+              - cel: |
+                  device.capacity["dra.cpu"].cpu.compareTo(quantity("3")) >= 0
+          template:
+            spec:
+              containers:
+              - name: engine
+                image: vllm/vllm-openai-cpu:v0.32.0
+                args:
+                - --model=Qwen/Qwen2.5-0.5B-Instruct
+                - --served-model-name=$(MODELPLANE_SERVED_MODEL_NAME)
+                - --max-model-len=2048
+                - --block-size=32
+                env:
+                - name: VLLM_CPU_KVCACHE_SPACE
+                  value: "1"
+                resources:
+                  requests:
+                    cpu: "2"
+                    memory: 2Gi
+                  limits:
+                    cpu: "2"
