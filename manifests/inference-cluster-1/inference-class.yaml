@@ -1,0 +1,19 @@
+# CPU-only hardware class for the bring-your-own inference-cluster-1.
+# No `provisioning` block: this class describes hardware that already exists
+# on a BYO cluster (a multipass VM mimicking a cloud node).
+# CPU claims use the dra.cpu DRA driver, which Modelplane installs on the
+# cluster (requires Kubernetes >= 1.36 on the inference cluster).
+apiVersion: modelplane.ai/v1alpha1
+kind: InferenceClass
+metadata:
+  name: cpu-small-byo
+spec:
+  description: "Multipass VM, 4 vCPUs, no GPU (3 usable cores after OS/kubelet reserve)"
+  devices:
+  - name: cpu
+    claim: DRA
+    driver: dra.cpu
+    deviceClassName: dra.cpu
+    count: 1
+    capacity:
+      cpu: { value: "3" }

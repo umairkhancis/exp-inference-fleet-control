@@ -1,0 +1,6 @@
+apiVersion: pkg.crossplane.io/v1
+kind: Configuration
+metadata:
+  name: modelplane
+spec:
+  package: xpkg.upbound.io/modelplane/modelplane:v0.6.0

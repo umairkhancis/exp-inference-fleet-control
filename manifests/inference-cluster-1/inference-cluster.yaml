@@ -1,0 +1,27 @@
+# Registers the existing (bring-your-own) minikube cluster running in the
+# "inference-cluster-1" multipass VM.
+#
+# Before applying, the kubeconfig Secret must exist on the control cluster
+# (see README.md). The kubeconfig must point at an address the control
+# cluster's pods can reach: the VM's multipass IP, not 127.0.0.1.
+#
+# BYO prerequisites handled outside this manifest:
+#   - node labels: modelplane.ai/pool=cpu-pool and modelplane.ai/cpu=true
+#   - a LoadBalancer implementation on the cluster (MetalLB)
+apiVersion: modelplane.ai/v1alpha1
+kind: InferenceCluster
+metadata:
+  name: inference-cluster-1
+  labels:
+    modelplane.ai/region: local
+spec:
+  cluster:
+    source: Existing
+    existing:
+      secretRef:
+        name: inference-cluster-1-kubeconfig
+        key: kubeconfig
+  nodePools:
+  - name: cpu-pool
+    className: cpu-small-byo
+    nodeCount: 1

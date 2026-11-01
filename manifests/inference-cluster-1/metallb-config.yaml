@@ -1,0 +1,15 @@
+# Address pool for the minikube MetalLB addon on inference-cluster-1.
+# The range sits in minikube's docker network (192.168.49.0/24) inside the VM,
+# so LoadBalancer services get addresses reachable from within the VM.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config
+  namespace: metallb-system
+data:
+  config: |
+    address-pools:
+    - name: default
+      protocol: layer2
+      addresses:
+      - 192.168.49.100-192.168.49.120

@@ -1,0 +1,9 @@
+# The fleet's front door for inference requests. Runs on inference-cluster-1.
+# PoC setup: no TLS, no auth — the gateway publishes plain-HTTP endpoints in
+# its status. Do not expose beyond the local machine in this form.
+apiVersion: modelplane.ai/v1alpha1
+kind: InferenceGateway
+metadata:
+  name: public
+spec:
+  clusterName: inference-cluster-1
