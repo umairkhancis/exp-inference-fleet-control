@@ -34,12 +34,14 @@ SECRET_NAME="${CLUSTER_NAME}-kubeconfig"
 # Per the InferenceCluster CRD: "The Secret must exist in the
 # modelplane-system namespace" (spec.cluster.existing.secretRef).
 SECRET_NAMESPACE="${SECRET_NAMESPACE:-modelplane-system}"
-# VM sizing for the CPU-only PoC cluster (see manifests/<name>/README.md).
-VM_CPUS="${VM_CPUS:-4}"
-VM_MEMORY="${VM_MEMORY:-6G}"
+# VM sizing for the CPU-only PoC cluster. 6 CPUs / 7G leaves real headroom
+# for an engine pod next to the platform pods: the dra.cpu driver reserves
+# 2 CPUs for the system, so this publishes 4 claimable cores per node.
+VM_CPUS="${VM_CPUS:-6}"
+VM_MEMORY="${VM_MEMORY:-7G}"
 VM_DISK="${VM_DISK:-30G}"
-CLUSTER_CPUS="${CLUSTER_CPUS:-3}"
-CLUSTER_MEMORY_MB="${CLUSTER_MEMORY_MB:-4096}"
+CLUSTER_CPUS="${CLUSTER_CPUS:-5}"
+CLUSTER_MEMORY_MB="${CLUSTER_MEMORY_MB:-6144}"
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
