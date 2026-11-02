@@ -78,7 +78,9 @@ log "Hop 2 — endpoint picker (EPP) log:"
 kubectl --context "$CLUSTER" logs -n "$NS" "$EPP_POD" --tail=20 | tail -8
 
 log "Hop 3 — vLLM engine log:"
-kubectl --context "$CLUSTER" logs -n "$NS" "$ENGINE_POD" -c engine --tail=20 | grep -iE 'POST|completion|prompt' | tail -5 || \
+# /metrics scrapes every few seconds drown out the POST line — filter them.
+kubectl --context "$CLUSTER" logs -n "$NS" "$ENGINE_POD" -c engine --tail=300 \
+  | grep -v 'GET /metrics' | grep -iE 'POST|completion|prompt' | tail -5 || \
   kubectl --context "$CLUSTER" logs -n "$NS" "$ENGINE_POD" -c engine --tail=5
 
 log "Done. Proof bundle: response JSON above (note the model/usage fields),"

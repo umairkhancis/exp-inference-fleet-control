@@ -136,10 +136,14 @@ The **device claim** — the workload side of the DRA handshake:
 
 ### `template.spec.containers[0]` — the engine container
 
-- **`image: vllm/vllm-openai-cpu:v0.32.0`** — vLLM's CPU build. The official
+- **`image: vllm/vllm-openai-cpu:v0.33.0`** — vLLM's CPU build. The official
   recipe pins `v0.32.0-x86_64`, which cannot run on our arm64 (Apple
-  Silicon) VMs; the plain `v0.32.0` tag is multi-arch and pulls the arm64
-  variant automatically.
+  Silicon) VMs; the plain tags are multi-arch and pull the arm64 variant
+  automatically. We need **v0.33.0 or later**: the v0.32.0 arm64 build
+  ships without triton, and its Python fallback for the slot-mapping
+  kernel crashes the engine on the first real request ("Boolean value of
+  Tensor with more than one value is ambiguous"); v0.33.0 replaced that
+  fallback with a real C++ kernel.
 - **`--model=Qwen/Qwen2.5-0.5B-Instruct`** — the model to download from
   Hugging Face and serve (~1 GB of weights, fetched on first start).
 - **`--served-model-name=$(MODELPLANE_SERVED_MODEL_NAME)`** — registers the
@@ -147,8 +151,11 @@ The **device claim** — the workload side of the DRA handshake:
   can route to it.
 - **`--max-model-len=2048`** — cap the **context length** to fit the small
   VM (the recipe used 4096 on a bigger node).
-- **`--block-size=32`** — how the KV cache is chunked internally; 32 is the
-  recipe's CPU-friendly value.
+- **`--enforce-eager`** — skip torch.compile. The compile warmup drove the
+  worker past 3.3 GiB RSS and took many minutes; eager mode starts in
+  seconds at a fraction of the memory, trading a little tokens/s — the
+  right side of the trade for a CPU PoC. (We also dropped the recipe's
+  `--block-size=32` in favor of the backend default.)
 - **`env: VLLM_CPU_KVCACHE_SPACE: "1"`** — give the **KV cache** 1 GiB of
   RAM (recipe used 4 on an 8-vCPU cloud node).
 - **`resources`** — **requests/limits**: 1 core and 2 GiB requested, with no
