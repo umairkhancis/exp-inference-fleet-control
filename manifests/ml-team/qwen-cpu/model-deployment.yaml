@@ -35,12 +35,20 @@ spec:
             spec:
               containers:
               - name: engine
-                image: vllm/vllm-openai-cpu:v0.32.0
+                # v0.33.0: the v0.32.0 arm64 build ships without triton and
+                # its Python fallback for the slot-mapping kernel crashes on
+                # the first request ("Boolean value of Tensor ... is
+                # ambiguous" in cpu_triton_utils.py). v0.33.0 replaced that
+                # fallback with a real C++ kernel.
+                image: vllm/vllm-openai-cpu:v0.33.0
                 args:
                 - --model=Qwen/Qwen2.5-0.5B-Instruct
                 - --served-model-name=$(MODELPLANE_SERVED_MODEL_NAME)
                 - --max-model-len=2048
-                - --block-size=32
+                # No --block-size override: the recipe's 32 trips an assert
+                # in the eager CPU slot-mapping kernel ("block_size *
+                # BLOCKS_PER_KV_BLOCK == KV_CACHE_BLOCK_SIZE") in v0.32.0 —
+                # the backend's own default satisfies it.
                 # Skip torch.compile. The compile warmup's memory spike
                 # (worker RSS >3.3 GiB) plus the KV cache exhausted the 7G
                 # VM and thrashed the node (load >200), and the long warmup
