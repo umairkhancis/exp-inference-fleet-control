@@ -17,65 +17,36 @@ metadata:
   name: qwen-cpu-demo
   namespace: ml-team
 spec:
-  # 1 replica on inference-cluster-1. The fleet ran 2 (one per cluster)
-  # until 2026-11-04, when cluster-2 was retired: its 8G VM couldn't hold
-  # vLLM + control plane + monitoring (chronic leader-election crash
-  # loops), and ml-team/chat's Claude failover already covers a
-  # single-replica fleet transparently.
   replicas: 1
   template:
     spec:
       engines:
-      - name: qwen
-        members:
-        - role: Standalone
-          nodeSelector:
-            devices:
-            - name: cpu
-              count: 1
-              selectors:
-              - cel: |
-                  device.capacity["dra.cpu"].cpu.compareTo(quantity("2")) >= 0
-          template:
-            spec:
-              containers:
-              - name: engine
-                # v0.33.0: the v0.32.0 arm64 build ships without triton and
-                # its Python fallback for the slot-mapping kernel crashes on
-                # the first request ("Boolean value of Tensor ... is
-                # ambiguous" in cpu_triton_utils.py). v0.33.0 replaced that
-                # fallback with a real C++ kernel.
-                image: vllm/vllm-openai-cpu:v0.33.0
-                args:
-                - --model=Qwen/Qwen2.5-0.5B-Instruct
-                - --served-model-name=$(MODELPLANE_SERVED_MODEL_NAME)
-                - --max-model-len=2048
-                # No --block-size override: the recipe's 32 trips an assert
-                # in the eager CPU slot-mapping kernel ("block_size *
-                # BLOCKS_PER_KV_BLOCK == KV_CACHE_BLOCK_SIZE") in v0.32.0 —
-                # the backend's own default satisfies it.
-                # Skip torch.compile. The compile warmup's memory spike
-                # (worker RSS >3.3 GiB) plus the KV cache exhausted the 7G
-                # VM and thrashed the node (load >200), and the long warmup
-                # kept tripping the startup probe. Eager mode starts in
-                # seconds at a fraction of the memory; slightly slower
-                # tokens/s is fine for a CPU PoC.
-                - --enforce-eager
-                env:
-                - name: VLLM_CPU_KVCACHE_SPACE
-                  value: "1"
-                # Give vLLM a bounded thread budget: enough to finish CPU
-                # warmup/compilation inside the startup-probe window (1
-                # thread was killed mid-warmup every ~7 min, looping
-                # forever), but far below the all-6-cores default that
-                # amplified the earlier cgroup thrash.
-                - name: OMP_NUM_THREADS
-                  value: "3"
-                # Request 1 core: the 4-core node already carries ~2.6 cores
-                # of platform pod requests (gateway, monitoring, DRA driver,
-                # control plane), so a 2-core request never schedules. No CPU
-                # limit — vLLM may burst into whatever is idle.
-                resources:
-                  requests:
-                    cpu: "1"
-                    memory: 2Gi
+        - name: qwen
+          members:
+            - role: Standalone
+              nodeSelector:
+                devices:
+                  - name: cpu
+                    count: 1
+                    selectors:
+                      - cel: |
+                          device.capacity["dra.cpu"].cpu.compareTo(quantity("2")) >= 0
+              template:
+                spec:
+                  containers:
+                    - name: engine
+                      image: vllm/vllm-openai-cpu:v0.33.0
+                      args:
+                        - --model=Qwen/Qwen2.5-0.5B-Instruct
+                        - --served-model-name=$(MODELPLANE_SERVED_MODEL_NAME)
+                        - --max-model-len=2048
+                        - --enforce-eager
+                      env:
+                        - name: VLLM_CPU_KVCACHE_SPACE
+                          value: "1"
+                        - name: OMP_NUM_THREADS
+                          value: "3"
+                      resources:
+                        requests:
+                          cpu: "1"
+                          memory: 2Gi

@@ -29,13 +29,9 @@ spec:
   api:
     schema: OpenAI
     prefix: /v1
-  # The gateway rewrites the request's "model" field to this before sending
-  # it out, so callers keep asking for ml-team/chat and never learn who
-  # answered. Haiku: the right cost tier for backing up a 0.5B demo model.
   model: claude-haiku-5-5
   credential:
     method: APIKey
     apiKey:
       secretRef:
         name: anthropic-api-key
-        # key inside the Secret defaults to "apiKey" — created to match.

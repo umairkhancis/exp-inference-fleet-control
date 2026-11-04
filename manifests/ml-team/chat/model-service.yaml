@@ -27,6 +27,3 @@ spec:
     selector:
       matchLabels:
         modelplane.ai/external-provider: anthropic
-# No spec.timeouts: the docs describe it, but the Modelplane version
-# installed here (v0.6) doesn't have it in the ModelService CRD yet —
-# defaults apply (request 300s, idle 60s).
