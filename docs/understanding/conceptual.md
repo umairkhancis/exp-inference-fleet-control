@@ -306,7 +306,7 @@ hierarchy: deployment → replicas → engines → members → pods.
 ```console
 $ kubectl --context modelplane get modelreplicas -n ml-team
 NAME               CLUSTER               ...
-qwen-cpu-demo-0    inference-cluster-2   # <- the "where"
+qwen-cpu-demo-0    inference-cluster-1   # <- the "where"
 ```
 
 ---

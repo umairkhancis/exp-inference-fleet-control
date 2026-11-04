@@ -17,7 +17,7 @@ set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
 CONTROL_CONTEXT="${CONTROL_CONTEXT:-modelplane}"
-CLUSTERS=(inference-cluster-1 inference-cluster-2)
+CLUSTERS=(inference-cluster-1)
 WORKLOAD_CLUSTER="inference-cluster-1"   # where the model replica lives
 GATEWAY_IP="192.168.49.100"
 

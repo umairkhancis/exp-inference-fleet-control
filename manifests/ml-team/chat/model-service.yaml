@@ -1,6 +1,6 @@
 # One model name, two tiers: callers ask for "ml-team/chat" and are served
-# by the fleet's qwen replicas (inference-cluster-1 AND inference-cluster-2)
-# while any are healthy, and by Claude (Anthropic's API) when none are.
+# by the fleet's qwen replica(s) while any are healthy, and by Claude
+# (Anthropic's API) when none are.
 # Callers can't tell which tier answered — that's the point.
 #
 # Failover mechanics (priority: lower wins):

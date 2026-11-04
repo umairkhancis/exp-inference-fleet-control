@@ -14,7 +14,6 @@ port-forward:
 
 ```sh
 ./client/gateway-tunnel.sh            # inference-cluster-1 -> localhost:8080
-./client/gateway-tunnel.sh inference-cluster-2 8081   # the other front door
 ```
 
 A real deployment would publish the gateway address directly; the tunnel

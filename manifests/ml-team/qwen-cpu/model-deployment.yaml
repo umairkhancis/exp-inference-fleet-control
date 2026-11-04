@@ -3,7 +3,7 @@
 #   - multi-arch image tag (v0.32.0 includes arm64 — the recipe's
 #     v0.32.0-x86_64 won't run on the Apple Silicon multipass VMs)
 #   - the CEL selector is evaluated twice: by Modelplane's scheduler against
-#     the DECLARED InferenceClass capacity (cpu-small-byo=3, cpu-micro-byo=2)
+#     the DECLARED InferenceClass capacity (cpu-small-byo declares 3)
 #     to pick a cluster, and by the node's DRA allocator against the REAL
 #     device the dra.cpu driver publishes (2 cores on these VMs). It must
 #     pass both, so it asks for >= 2. (A ">= 3" demand picks cluster-1 by
@@ -17,11 +17,12 @@ metadata:
   name: qwen-cpu-demo
   namespace: ml-team
 spec:
-  # 2 replicas = one per fleet cluster: each node publishes a single dra.cpu
-  # device, the first replica's claim consumes cluster-1's, so the second
-  # schedules onto cluster-2 (whose cpu-micro-byo class also passes the
-  # ">= 2" CEL below). Both replicas back ml-team/chat's fleet tier.
-  replicas: 2
+  # 1 replica on inference-cluster-1. The fleet ran 2 (one per cluster)
+  # until 2026-11-04, when cluster-2 was retired: its 8G VM couldn't hold
+  # vLLM + control plane + monitoring (chronic leader-election crash
+  # loops), and ml-team/chat's Claude failover already covers a
+  # single-replica fleet transparently.
+  replicas: 1
   template:
     spec:
       engines:

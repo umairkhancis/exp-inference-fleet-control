@@ -1,8 +1,8 @@
 # ml-team/chat — one model name, fleet first, Claude as failover
 
 Phase 03: callers send OpenAI-style requests with `"model": "ml-team/chat"`
-to any fleet gateway. While qwen replicas are healthy on
-inference-cluster-1/-2, they serve; when none are (still pulling, crashed,
+to the fleet gateway. While a qwen replica is healthy on
+inference-cluster-1 it serves; when none is (still pulling, crashed,
 scaled to zero), the same requests are served by Claude via Anthropic's
 API. Callers never see which tier answered.
 
@@ -12,7 +12,9 @@ API. Callers never see which tier answered.
 | `model-endpoint-claude.yaml` | Hand-written external ModelEndpoint for Anthropic |
 
 The fleet tier is backed by `../qwen-cpu/model-deployment.yaml` with
-`replicas: 2` — one replica per cluster.
+`replicas: 1`. (It ran with 2 — one per cluster — until inference-cluster-2
+was retired on 2026-11-04; its 8G VM couldn't hold vLLM plus the control
+plane, and the Claude tier makes a second replica optional.)
 
 ## Setup (control cluster)
 
@@ -49,14 +51,6 @@ multipass exec inference-cluster-1 -- curl -s http://192.168.49.100/v1/chat/comp
   locally by Qwen2.5-0.5B.
 
 ## Notes
-
-- **Each gateway serves its own cluster's replica (+ Claude).** The
-  cross-cluster path (gateway-1 → cluster-2's replica and vice versa)
-  cannot work in this PoC: both VMs use the same 192.168.49.0/24 docker
-  network, so the LB addresses the clusters exchange for each other's
-  cluster-gateways collide with local ones. Envoy tries them on every
-  request (visible as cx_connect_fail in /clusters) and retries onto the
-  next endpoint — which is exactly the failover mechanism doing its job.
 
 - `ml-team/qwen-cpu` (the phase-02 service) still exists and routes only
   to the fleet, with no fallback — useful for telling the tiers apart

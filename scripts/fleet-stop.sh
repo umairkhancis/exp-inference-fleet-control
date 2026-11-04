@@ -8,7 +8,7 @@
 
 set -euo pipefail
 
-VMS=(inference-cluster-1 inference-cluster-2 modelplane)
+VMS=(inference-cluster-1 modelplane)
 
 for vm in "${VMS[@]}"; do
   state=$(multipass info "$vm" --format csv 2>/dev/null | tail -1 | cut -d, -f2 || echo missing)

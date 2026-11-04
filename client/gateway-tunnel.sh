@@ -8,7 +8,7 @@
 #
 # Usage:
 #   ./gateway-tunnel.sh                          # inference-cluster-1 -> :8080
-#   ./gateway-tunnel.sh inference-cluster-2 8081
+#   ./gateway-tunnel.sh <other-context> <port>   # any other fleet cluster
 
 set -euo pipefail
 

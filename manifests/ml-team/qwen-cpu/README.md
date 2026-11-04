@@ -16,8 +16,8 @@ kubectl --context modelplane apply -f model-service.yaml
 # and downloads ~1GB of model weights, so allow several minutes):
 kubectl --context modelplane get md -n ml-team --watch
 
-# Which cluster did the scheduler pick? (must be inference-cluster-1 —
-# the CEL selector demands >= 3 cores and cluster-2 only has 2)
+# Which cluster did the scheduler pick? (inference-cluster-1 — the
+# fleet's only registered cluster since 2026-11-04)
 kubectl --context modelplane get modelreplica -n ml-team
 ```
 
@@ -36,6 +36,11 @@ multipass exec inference-cluster-1 -- curl -s "$ADDRESS/chat/completions" \
 
 - The model name callers use is `ml-team/qwen-cpu` (namespace/service).
 - Expect modest speed: ~0.5B parameters on 2 CPU cores.
-- To let the model also run on inference-cluster-2, lower the CEL quantity
-  in model-deployment.yaml from "3" to "2" — then scale `replicas: 2` and
-  watch the second replica land on the smaller cluster.
+- To spread the model across more clusters, register another
+  InferenceCluster whose class passes the CEL selector in
+  model-deployment.yaml, then raise `replicas` — one replica lands per
+  cluster (each node publishes a single dra.cpu device). The fleet ran
+  this way on a second cluster until 2026-11-04, when it was retired:
+  its 8G VM couldn't hold vLLM plus the control plane without chronic
+  leader-election crash loops, and the Claude failover on `ml-team/chat`
+  covers a single-replica fleet anyway.

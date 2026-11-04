@@ -24,8 +24,9 @@ get engines running on the right hardware and traffic flowing to them.
 
 A Kubernetes cluster with accelerator capacity (GPUs in production; CPU
 devices in this PoC) whose job is to run inference engines. Ours:
-`inference-cluster-1` and `inference-cluster-2`, each a minikube inside a
-multipass VM.
+`inference-cluster-1`, a minikube inside a multipass VM. (The fleet ran a
+second one until 2026-11-04; registering more is
+`scripts/add-inference-cluster.sh`.)
 
 ### Node Pool
 
