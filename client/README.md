@@ -37,6 +37,18 @@ python3 client/chat.py --who   # ask the model to identify itself
 Both default to `http://localhost:8080` and `ml-team/chat`; override with
 `GATEWAY_URL` / `MODEL` (curl) or `--url` / `--model` (python).
 
+## Proving the failover
+
+```sh
+./client/test-failover.sh
+```
+
+Three phases, each printing `asked for -> served by` per request: the
+fleet's qwen answers (priority 0), then the script kills the engine pod
+and the *same* requests are answered by Claude (priority 1), then the
+fleet recovers and takes traffic back. The kill/restore half uses
+kubectl — that part is test harness, not client view.
+
 ## What to look for
 
 - `model` in the response says who actually served it:
