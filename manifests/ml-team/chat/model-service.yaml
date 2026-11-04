@@ -1,0 +1,32 @@
+# One model name, two tiers: callers ask for "ml-team/chat" and are served
+# by the fleet's qwen replicas (inference-cluster-1 AND inference-cluster-2)
+# while any are healthy, and by Claude (Anthropic's API) when none are.
+# Callers can't tell which tier answered — that's the point.
+#
+# Failover mechanics (priority: lower wins):
+#   - tier 0 "fleet" matches every ModelEndpoint Modelplane created for
+#     qwen-cpu-demo replicas, on whichever cluster each one landed;
+#   - tier 1 "claude" matches the hand-written external endpoint
+#     (model-endpoint-claude.yaml). It takes traffic only as tier 0 loses
+#     healthy endpoints, and all of it once tier 0 has none (replica down,
+#     endpoint withdrawn, or the gateway giving up before first byte).
+apiVersion: modelplane.ai/v1alpha1
+kind: ModelService
+metadata:
+  name: chat
+  namespace: ml-team
+spec:
+  endpoints:
+  - name: fleet
+    priority: 0
+    selector:
+      matchLabels:
+        modelplane.ai/deployment: qwen-cpu-demo
+  - name: claude
+    priority: 1
+    selector:
+      matchLabels:
+        modelplane.ai/external-provider: anthropic
+# No spec.timeouts: the docs describe it, but the Modelplane version
+# installed here (v0.6) doesn't have it in the ModelService CRD yet —
+# defaults apply (request 300s, idle 60s).

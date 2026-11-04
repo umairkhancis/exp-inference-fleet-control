@@ -17,7 +17,11 @@ metadata:
   name: qwen-cpu-demo
   namespace: ml-team
 spec:
-  replicas: 1
+  # 2 replicas = one per fleet cluster: each node publishes a single dra.cpu
+  # device, the first replica's claim consumes cluster-1's, so the second
+  # schedules onto cluster-2 (whose cpu-micro-byo class also passes the
+  # ">= 2" CEL below). Both replicas back ml-team/chat's fleet tier.
+  replicas: 2
   template:
     spec:
       engines:

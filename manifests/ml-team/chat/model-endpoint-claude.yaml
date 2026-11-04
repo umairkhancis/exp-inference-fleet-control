@@ -1,0 +1,41 @@
+# External endpoint routing to Anthropic's Claude API — the failover tier
+# behind the ml-team/chat ModelService.
+#
+# Hand-written (unlike fleet ModelEndpoints, which Modelplane creates per
+# replica): an external provider is just an endpoint with an origin outside
+# the fleet. The ModelService finds it through the external-provider label.
+#
+# schema is OpenAI, not Anthropic, on purpose: the gateway translates
+# Anthropic-client requests to OpenAI backends but NOT the reverse, so an
+# Anthropic-schema backend could never serve our OpenAI-style callers.
+# Anthropic serves an OpenAI-compatible API at api.anthropic.com/v1, which
+# also matches how the gateway sends an APIKey credential to OpenAI-schema
+# backends: "Authorization: Bearer <key>" — exactly what that endpoint
+# expects.
+#
+# Prerequisite (imperative, NOT committed — it holds the API key):
+#   kubectl --context modelplane -n ml-team create secret generic \
+#     anthropic-api-key --from-literal=apiKey="$ANTHROPIC_API_KEY"
+# Without it the endpoint reports EndpointReady=False and gets no traffic.
+apiVersion: modelplane.ai/v1alpha1
+kind: ModelEndpoint
+metadata:
+  name: claude
+  namespace: ml-team
+  labels:
+    modelplane.ai/external-provider: anthropic
+spec:
+  origin: https://api.anthropic.com
+  api:
+    schema: OpenAI
+    prefix: /v1
+  # The gateway rewrites the request's "model" field to this before sending
+  # it out, so callers keep asking for ml-team/chat and never learn who
+  # answered. Haiku: the right cost tier for backing up a 0.5B demo model.
+  model: claude-haiku-5-5
+  credential:
+    method: APIKey
+    apiKey:
+      secretRef:
+        name: anthropic-api-key
+        # key inside the Secret defaults to "apiKey" — created to match.

@@ -1,7 +1,8 @@
+.DS_Store
 
 docs/background.md
 docs/phase*
-.DS_Store
+docs/sizing*
 
 kubeconfig/
 .logs/
