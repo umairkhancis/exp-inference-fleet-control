@@ -34,21 +34,25 @@ SECRET_NAME="${CLUSTER_NAME}-kubeconfig"
 # Per the InferenceCluster CRD: "The Secret must exist in the
 # modelplane-system namespace" (spec.cluster.existing.secretRef).
 SECRET_NAMESPACE="${SECRET_NAMESPACE:-modelplane-system}"
-# VM sizing for the CPU-only PoC cluster. 6 CPUs / 7G leaves real headroom
-# for an engine pod next to the platform pods: the dra.cpu driver reserves
-# 2 CPUs for the system, so this publishes 4 claimable cores per node.
+# VM sizing for the CPU-only PoC cluster: the proven engine-cluster shape
+# from docs/sizing.md — 10G VM / 9G cgroup (+2G swapfile as shock absorber).
+# vLLM qwen's steady RSS is ~4.5GiB next to ~2.5GiB of platform pods; the
+# originally planned 7G/6G shape OOM-kills the engine during model load
+# (verified on a from-scratch build 2026-11-06). The dra.cpu driver
+# reserves 2 CPUs for the system, so 6 CPUs publishes 4 claimable cores.
 #
 # NOTE: CLUSTER_MEMORY_MB is baked into the minikube DOCKER CONTAINER's
 # cgroup at creation. Resizing the VM later does NOT lift it — the node
 # then page-thrashes inside the old limit while the new RAM sits idle
 # (kubelet still advertises the full VM, so k8s overschedules the cgroup).
 # After any VM resize, also run, inside the VM:
-#   docker update --memory <N>g --memory-swap <N>g --cpus <C> minikube
+#   docker update --memory <N>g --memory-swap <N+2>g --cpus <C> minikube
 VM_CPUS="${VM_CPUS:-6}"
-VM_MEMORY="${VM_MEMORY:-7G}"
+VM_MEMORY="${VM_MEMORY:-10G}"
 VM_DISK="${VM_DISK:-30G}"
 CLUSTER_CPUS="${CLUSTER_CPUS:-5}"
-CLUSTER_MEMORY_MB="${CLUSTER_MEMORY_MB:-6144}"
+CLUSTER_MEMORY_MB="${CLUSTER_MEMORY_MB:-9216}"
+SWAP_GB="${SWAP_GB:-2}"
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
@@ -79,6 +83,24 @@ VM_NAME="$CLUSTER_NAME" CONTEXT_NAME="$CLUSTER_NAME" \
 VM_CPUS="$VM_CPUS" VM_MEMORY="$VM_MEMORY" VM_DISK="$VM_DISK" \
 CLUSTER_CPUS="$CLUSTER_CPUS" CLUSTER_MEMORY_MB="$CLUSTER_MEMORY_MB" \
   "$SCRIPT_DIR/setup-control-cluster.sh"
+
+# ----------------------------------------- 1b. swapfile + swap ceiling ------
+# docs/sizing.md: a small swapfile plus a memory-swap ceiling above the
+# cgroup cap turns load-spike OOM kills into graceful spill instead.
+log "Ensuring ${SWAP_GB}G swapfile and container swap ceiling"
+multipass exec "$CLUSTER_NAME" -- sudo bash -s <<REMOTE
+set -euo pipefail
+if [ ! -f /swapfile ]; then
+  fallocate -l ${SWAP_GB}G /swapfile
+  chmod 600 /swapfile
+  mkswap /swapfile >/dev/null
+fi
+swapon /swapfile 2>/dev/null || true
+grep -q '^/swapfile' /etc/fstab || echo '/swapfile none swap sw 0 0' >> /etc/fstab
+REMOTE
+MEM_G=$(( CLUSTER_MEMORY_MB / 1024 ))
+multipass exec "$CLUSTER_NAME" -- sg docker -c \
+  "docker update --memory ${MEM_G}g --memory-swap $(( MEM_G + SWAP_GB ))g minikube >/dev/null"
 
 # --------------------------------------------- 2a. pool labels on the node --
 # Without these, Modelplane worker pods stay Pending and the pool publishes
