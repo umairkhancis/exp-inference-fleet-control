@@ -1,0 +1,157 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1600px; height: 900px; overflow: hidden; }
+  body {
+    font-family: -apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+    background: radial-gradient(1100px 750px at 50% 30%, #13223f 0%, #0b1120 60%, #070b16 100%);
+    color: #e2e8f0; position: relative;
+  }
+  .kicker {
+    position: absolute; top: 42px; left: 0; right: 0; text-align: center;
+    font-size: 18px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase;
+    color: #5eead4;
+  }
+
+  /* icon tiles */
+  .tile {
+    position: absolute; border-radius: 36px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 18px 50px rgba(2, 8, 23, .75), 0 0 0 1px rgba(148,163,184,.12);
+  }
+  .tile.mp { left: 705px; top: 100px; width: 190px; height: 190px; background: #001d30; }
+  .tile.mp img { width: 164px; object-fit: contain; }
+  .tile.k8s { left: 535px; top: 400px; width: 180px; height: 180px; background: #ffffff; }
+  .k8s-crop {
+    width: 132px; height: 132px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .k8s-crop img { width: 156px; height: 156px; object-fit: cover; object-position: 46% 50%; }
+  .tile.claude { left: 965px; top: 400px; width: 180px; height: 180px; }
+  .tile.claude img { width: 180px; height: 180px; object-fit: cover; }
+
+  /* separate boundaries + the one outline the caller sees */
+  .boundary { position: absolute; border: 1.5px dashed rgba(148,163,184,.5); border-radius: 24px; }
+  .boundary > .tag {
+    position: absolute; bottom: -13px; left: 50%; transform: translateX(-50%); padding: 3px 13px;
+    font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    color: #94a3b8; background: #0b1120; border-radius: 999px;
+    border: 1px solid rgba(148,163,184,.35); white-space: nowrap;
+  }
+  .fleet   { left: 465px; top: 358px; width: 320px; height: 268px; border-color: rgba(90,155,246,.55); }
+  .fleet > .tag { color: #7db4f8; border-color: rgba(90,155,246,.45); }
+  .anthropic { left: 895px; top: 358px; width: 320px; height: 268px; border-color: rgba(232,144,107,.55); }
+  .anthropic > .tag { color: #e8906b; border-color: rgba(232,144,107,.45); }
+
+  .one {
+    position: absolute; left: 425px; top: 318px; width: 830px; height: 348px;
+    border: 1.5px solid rgba(56,189,248,.4); border-radius: 32px;
+    box-shadow: 0 0 36px rgba(56,189,248,.08) inset;
+  }
+  .one > .tag {
+    position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%);
+    padding: 4px 16px; font-size: 14px; font-weight: 700; letter-spacing: 1.5px;
+    color: #38bdf8; background: #0b1120; border-radius: 999px;
+    border: 1px solid rgba(56,189,248,.45); white-space: nowrap;
+  }
+  .one > .tag code { font-family: "SF Mono", Menlo, monospace; font-weight: 600; }
+
+  /* user outside the boundary */
+  .user {
+    position: absolute; left: 120px; top: 428px; width: 150px; padding: 18px 0 16px;
+    border-radius: 18px; background: rgba(15,23,42,.92); text-align: center;
+    box-shadow: 0 0 0 1.5px rgba(226,232,240,.5);
+  }
+  .user svg { display: block; margin: 0 auto 6px; }
+  .user .name { font-size: 20px; font-weight: 700; }
+  .user .role { font-size: 13px; color: #64748b; margin-top: 3px; }
+
+  /* arrow labels */
+  .alabel {
+    position: absolute; font-size: 14px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase;
+  }
+  .alabel.orch { left: 0; right: 0; top: 296px; text-align: center; color: #5eead4; }
+  .alabel.fo   { left: 790px; top: 462px; width: 100px; text-align: center; color: #e8906b; }
+
+  svg.wires { position: absolute; inset: 0; pointer-events: none; }
+
+  h1 {
+    position: absolute; left: 0; right: 0; top: 716px; text-align: center;
+    font-size: 44px; font-weight: 800; color: #f8fafc; letter-spacing: .5px;
+  }
+  h1 .dim { color: #475569; font-weight: 300; padding: 0 6px; }
+  .sub {
+    position: absolute; left: 0; right: 0; top: 782px; text-align: center;
+    font-size: 22px; color: #94a3b8;
+  }
+  .sub b { color: #e8906b; font-weight: 700; }
+  .sub code { font-family: "SF Mono", Menlo, monospace; font-size: 20px; color: #38bdf8; font-weight: 600; }
+
+  .footer {
+    position: absolute; bottom: 34px; left: 90px; right: 90px;
+    display: flex; justify-content: space-between; font-size: 16px; color: #475569;
+  }
+  .footer b { color: #94a3b8; font-weight: 600; }
+</style>
+</head>
+<body>
+  <div class="kicker">Inference Unpacked · Fleet Control</div>
+
+  <div class="one"><div class="tag">appears as one · <code>ml-team/chat</code></div></div>
+  <div class="boundary fleet"><div class="tag">Your fleet · Kubernetes</div></div>
+  <div class="boundary anthropic"><div class="tag">Anthropic cloud</div></div>
+
+  <svg class="wires" width="1600" height="900" viewBox="0 0 1600 900">
+    <defs>
+      <marker id="ah-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#5eead4"/>
+      </marker>
+      <marker id="ah-coral" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#e8906b"/>
+      </marker>
+      <marker id="ah-grey" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/>
+      </marker>
+    </defs>
+    <!-- modelplane -> each boundary (orchestrates) -->
+    <path d="M 755 294 C 720 320, 680 332, 638 352" fill="none" stroke="#5eead4"
+          stroke-width="2.5" marker-end="url(#ah-teal)"/>
+    <path d="M 845 294 C 880 320, 920 332, 962 352" fill="none" stroke="#5eead4"
+          stroke-width="2.5" marker-end="url(#ah-teal)"/>
+    <!-- fleet -> claude (failover) -->
+    <line x1="789" y1="492" x2="889" y2="492" stroke="#e8906b" stroke-width="2.5"
+          stroke-dasharray="7 7" marker-end="url(#ah-coral)"/>
+    <!-- user -> the one boundary -->
+    <line x1="274" y1="492" x2="419" y2="492" stroke="#94a3b8" stroke-width="2.5"
+          marker-end="url(#ah-grey)"/>
+  </svg>
+
+  <div class="tile mp"><img src="modelplane.png" alt="Modelplane"></div>
+  <div class="tile k8s"><div class="k8s-crop"><img src="k8s.png" alt="Kubernetes"></div></div>
+  <div class="tile claude"><img src="claude.png" alt="Claude"></div>
+
+  <div class="alabel orch">orchestrates</div>
+  <div class="alabel fo">failover</div>
+
+  <div class="user">
+    <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" stroke-width="1.8" stroke-linecap="round">
+      <circle cx="12" cy="8" r="4"/>
+      <path d="M4 21 c0 -4.5 3.5 -7 8 -7 s8 2.5 8 7"/>
+    </svg>
+    <div class="name">User</div>
+    <div class="role">sees one model</div>
+  </div>
+
+  <h1>Separate boundaries <span class="dim">·</span> one model</h1>
+  <div class="sub">Modelplane orchestrates both tiers · the caller outside sees only <code>ml-team/chat</code> · <b>Claude answers when the fleet can't</b></div>
+
+  <div class="footer">
+    <div><b>github.com/umairkhancis/exp-inference-fleet-control</b></div>
+    <div>crossplane · minikube · multipass · one command · reproducible</div>
+  </div>
+</body>
+</html>
