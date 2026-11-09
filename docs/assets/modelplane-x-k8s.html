@@ -11,85 +11,86 @@
     color: #e2e8f0; position: relative;
   }
   .kicker {
-    position: absolute; top: 42px; left: 0; right: 0; text-align: center;
+    position: absolute; top: 40px; left: 0; right: 0; text-align: center;
     font-size: 18px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase;
     color: #5eead4;
   }
 
-  /* icon tiles */
-  .tile {
-    position: absolute; border-radius: 36px; overflow: hidden;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 18px 50px rgba(2, 8, 23, .75), 0 0 0 1px rgba(148,163,184,.12);
+  /* ------- the hero: Modelplane, emphasized ------- */
+  .tile.mp {
+    position: absolute; left: 680px; top: 92px; width: 240px; height: 240px;
+    border-radius: 44px; background: #001d30;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 12px;
+    box-shadow: 0 0 0 2px rgba(94,234,212,.55), 0 0 70px rgba(94,234,212,.22),
+                0 24px 70px rgba(2,8,23,.8);
   }
-  .tile.mp { left: 705px; top: 100px; width: 190px; height: 190px; background: #001d30; }
-  .tile.mp img { width: 164px; object-fit: contain; }
-  .tile.k8s { left: 535px; top: 400px; width: 180px; height: 180px; background: #ffffff; }
-  .k8s-crop {
-    width: 132px; height: 132px; overflow: hidden;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .k8s-crop img { width: 156px; height: 156px; object-fit: cover; object-position: 46% 50%; }
-  .tile.claude { left: 965px; top: 400px; width: 180px; height: 180px; }
-  .tile.claude img { width: 180px; height: 180px; object-fit: cover; }
+  /* the logo is one horizontal lockup (icon + wordmark); crop it twice */
+  .mp-icon { position: relative; width: 140px; height: 136px; overflow: hidden; }
+  .mp-icon img { position: absolute; width: 600px; left: -8px; top: -12px; }
+  .mp-word { position: relative; width: 180px; height: 28px; overflow: hidden; }
+  .mp-word img { position: absolute; width: 250px; left: -65px; top: -19px; }
 
-  /* separate boundaries + the one outline the caller sees */
-  .boundary { position: absolute; border: 1.5px dashed rgba(148,163,184,.5); border-radius: 24px; }
+  /* ------- supporting tiles, de-emphasized ------- */
+  .tile.small {
+    position: absolute; border-radius: 24px; overflow: hidden; opacity: .92;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 12px 34px rgba(2,8,23,.7), 0 0 0 1px rgba(148,163,184,.12);
+  }
+  .k8s-crop { width: 80px; height: 80px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .k8s-crop img { width: 95px; height: 95px; object-fit: cover; object-position: 46% 50%; }
+  .tile.k8s { width: 110px; height: 110px; background: #ffffff; }
+  .k1 { left: 395px; top: 455px; }
+  .k2 { left: 620px; top: 455px; }
+  .k3 { left: 845px; top: 455px; }
+  .tile.claude { width: 120px; height: 120px; left: 1185px; top: 470px; }
+  .tile.claude img { width: 120px; height: 120px; object-fit: cover; }
+
+  .cname {
+    position: absolute; width: 110px; text-align: center;
+    font-size: 15px; font-weight: 600; color: #94a3b8;
+  }
+  .cn1 { left: 395px; top: 580px; } .cn2 { left: 620px; top: 580px; } .cn3 { left: 845px; top: 580px; }
+  .cn3 i { font-style: normal; color: #64748b; }
+
+  /* ------- boundaries ------- */
+  .boundary { position: absolute; border: 1.5px dashed rgba(148,163,184,.5); border-radius: 26px; }
   .boundary > .tag {
-    position: absolute; bottom: -13px; left: 50%; transform: translateX(-50%); padding: 3px 13px;
-    font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-    color: #94a3b8; background: #0b1120; border-radius: 999px;
-    border: 1px solid rgba(148,163,184,.35); white-space: nowrap;
+    position: absolute; bottom: -14px; left: 50%; transform: translateX(-50%);
+    padding: 3px 14px; font-size: 13px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; background: #0b1120; border-radius: 999px;
+    white-space: nowrap;
   }
-  .fleet   { left: 465px; top: 358px; width: 320px; height: 268px; border-color: rgba(90,155,246,.55); }
-  .fleet > .tag { color: #7db4f8; border-color: rgba(90,155,246,.45); }
-  .anthropic { left: 895px; top: 358px; width: 320px; height: 268px; border-color: rgba(232,144,107,.55); }
-  .anthropic > .tag { color: #e8906b; border-color: rgba(232,144,107,.45); }
+  .inhouse { left: 345px; top: 405px; width: 660px; height: 230px; border-color: rgba(90,155,246,.55); }
+  .inhouse > .tag { color: #7db4f8; border: 1px solid rgba(90,155,246,.45); }
+  .frontier { left: 1130px; top: 405px; width: 230px; height: 230px; border-color: rgba(232,144,107,.55); }
+  .frontier > .tag { color: #e8906b; border: 1px solid rgba(232,144,107,.45); }
+  .frontier .sub {
+    position: absolute; top: 20px; left: 0; right: 0; text-align: center;
+    font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; color: #a3836f;
+  }
 
-  .one {
-    position: absolute; left: 425px; top: 318px; width: 830px; height: 348px;
-    border: 1.5px solid rgba(56,189,248,.4); border-radius: 32px;
-    box-shadow: 0 0 36px rgba(56,189,248,.08) inset;
-  }
-  .one > .tag {
-    position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%);
-    padding: 4px 16px; font-size: 14px; font-weight: 700; letter-spacing: 1.5px;
-    color: #38bdf8; background: #0b1120; border-radius: 999px;
-    border: 1px solid rgba(56,189,248,.45); white-space: nowrap;
-  }
-  .one > .tag code { font-family: "SF Mono", Menlo, monospace; font-weight: 600; }
-
-  /* user outside the boundary */
-  .user {
-    position: absolute; left: 120px; top: 428px; width: 150px; padding: 18px 0 16px;
-    border-radius: 18px; background: rgba(15,23,42,.92); text-align: center;
-    box-shadow: 0 0 0 1.5px rgba(226,232,240,.5);
-  }
-  .user svg { display: block; margin: 0 auto 6px; }
-  .user .name { font-size: 20px; font-weight: 700; }
-  .user .role { font-size: 13px; color: #64748b; margin-top: 3px; }
-
-  /* arrow labels */
+  /* ------- arrow labels ------- */
   .alabel {
     position: absolute; font-size: 14px; font-weight: 600;
     letter-spacing: 2px; text-transform: uppercase;
   }
-  .alabel.orch { left: 0; right: 0; top: 296px; text-align: center; color: #5eead4; }
-  .alabel.fo   { left: 790px; top: 462px; width: 100px; text-align: center; color: #e8906b; }
+  .alabel.orch { left: 0; right: 0; top: 352px; text-align: center; color: #5eead4; }
+  .alabel.fo   { left: 1012px; top: 488px; width: 112px; text-align: center; color: #e8906b; }
 
   svg.wires { position: absolute; inset: 0; pointer-events: none; }
 
   h1 {
-    position: absolute; left: 0; right: 0; top: 716px; text-align: center;
-    font-size: 44px; font-weight: 800; color: #f8fafc; letter-spacing: .5px;
+    position: absolute; left: 0; right: 0; top: 712px; text-align: center;
+    font-size: 46px; font-weight: 800; color: #f8fafc; letter-spacing: .5px;
   }
   h1 .dim { color: #475569; font-weight: 300; padding: 0 6px; }
-  .sub {
+  .sub2 {
     position: absolute; left: 0; right: 0; top: 782px; text-align: center;
     font-size: 22px; color: #94a3b8;
   }
-  .sub b { color: #e8906b; font-weight: 700; }
-  .sub code { font-family: "SF Mono", Menlo, monospace; font-size: 20px; color: #38bdf8; font-weight: 600; }
+  .sub2 b { color: #e8906b; font-weight: 700; }
+  .sub2 code { font-family: "SF Mono", Menlo, monospace; font-size: 20px; color: #38bdf8; font-weight: 600; }
 
   .footer {
     position: absolute; bottom: 34px; left: 90px; right: 90px;
@@ -101,9 +102,8 @@
 <body>
   <div class="kicker">Inference Unpacked · Fleet Control</div>
 
-  <div class="one"><div class="tag">appears as one · <code>ml-team/chat</code></div></div>
-  <div class="boundary fleet"><div class="tag">Your fleet · Kubernetes</div></div>
-  <div class="boundary anthropic"><div class="tag">Anthropic cloud</div></div>
+  <div class="boundary inhouse"><div class="tag">In-house · your clusters</div></div>
+  <div class="boundary frontier"><div class="sub">outside the boundary</div><div class="tag">Anthropic · frontier</div></div>
 
   <svg class="wires" width="1600" height="900" viewBox="0 0 1600 900">
     <defs>
@@ -113,41 +113,38 @@
       <marker id="ah-coral" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
         <path d="M0,0 L10,5 L0,10 z" fill="#e8906b"/>
       </marker>
-      <marker id="ah-grey" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-        <path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/>
-      </marker>
     </defs>
-    <!-- modelplane -> each boundary (orchestrates) -->
-    <path d="M 755 294 C 720 320, 680 332, 638 352" fill="none" stroke="#5eead4"
-          stroke-width="2.5" marker-end="url(#ah-teal)"/>
-    <path d="M 845 294 C 880 320, 920 332, 962 352" fill="none" stroke="#5eead4"
-          stroke-width="2.5" marker-end="url(#ah-teal)"/>
-    <!-- fleet -> claude (failover) -->
-    <line x1="789" y1="492" x2="889" y2="492" stroke="#e8906b" stroke-width="2.5"
+    <!-- modelplane -> each in-house cluster -->
+    <path d="M 740 338 C 650 358, 540 376, 468 396" fill="none" stroke="#5eead4" stroke-width="2.5" marker-end="url(#ah-teal)"/>
+    <path d="M 800 340 L 731 394" fill="none" stroke="#5eead4" stroke-width="2.5" marker-end="url(#ah-teal)"/>
+    <path d="M 860 338 C 900 358, 905 374, 902 394" fill="none" stroke="#5eead4" stroke-width="2.5" marker-end="url(#ah-teal)"/>
+    <!-- modelplane -> claude endpoint (it defines the failover tier too) -->
+    <path d="M 924 270 C 1080 300, 1200 340, 1248 398" fill="none" stroke="#5eead4"
+          stroke-width="1.8" stroke-dasharray="3 7" opacity=".65" marker-end="url(#ah-teal)"/>
+    <!-- fleet -> claude failover -->
+    <line x1="1010" y1="520" x2="1122" y2="520" stroke="#e8906b" stroke-width="2.5"
           stroke-dasharray="7 7" marker-end="url(#ah-coral)"/>
-    <!-- user -> the one boundary -->
-    <line x1="274" y1="492" x2="419" y2="492" stroke="#94a3b8" stroke-width="2.5"
-          marker-end="url(#ah-grey)"/>
   </svg>
 
-  <div class="tile mp"><img src="modelplane.png" alt="Modelplane"></div>
-  <div class="tile k8s"><div class="k8s-crop"><img src="k8s.png" alt="Kubernetes"></div></div>
-  <div class="tile claude"><img src="claude.png" alt="Claude"></div>
+  <div class="tile mp">
+    <div class="mp-icon"><img src="modelplane.png" alt=""></div>
+    <div class="mp-word"><img src="modelplane.png" alt="Modelplane"></div>
+  </div>
+
+  <div class="tile small k8s k1"><div class="k8s-crop"><img src="k8s.png" alt="Kubernetes"></div></div>
+  <div class="tile small k8s k2"><div class="k8s-crop"><img src="k8s.png" alt="Kubernetes"></div></div>
+  <div class="tile small k8s k3"><div class="k8s-crop"><img src="k8s.png" alt="Kubernetes"></div></div>
+  <div class="cname cn1">cluster-1</div>
+  <div class="cname cn2">cluster-2</div>
+  <div class="cname cn3">cluster-<i>N</i></div>
+
+  <div class="tile small claude"><img src="claude.png" alt="Claude"></div>
 
   <div class="alabel orch">orchestrates</div>
   <div class="alabel fo">failover</div>
 
-  <div class="user">
-    <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" stroke-width="1.8" stroke-linecap="round">
-      <circle cx="12" cy="8" r="4"/>
-      <path d="M4 21 c0 -4.5 3.5 -7 8 -7 s8 2.5 8 7"/>
-    </svg>
-    <div class="name">User</div>
-    <div class="role">sees one model</div>
-  </div>
-
-  <h1>Separate boundaries <span class="dim">·</span> one model</h1>
-  <div class="sub">Modelplane orchestrates both tiers · the caller outside sees only <code>ml-team/chat</code> · <b>Claude answers when the fleet can't</b></div>
+  <h1>One control plane <span class="dim">·</span> any number of clusters</h1>
+  <div class="sub2">Modelplane orchestrates the in-house fleet behind one name — <code>ml-team/chat</code> — and <b>Claude, the frontier, answers when it can't</b></div>
 
   <div class="footer">
     <div><b>github.com/umairkhancis/exp-inference-fleet-control</b></div>

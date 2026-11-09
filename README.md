@@ -9,6 +9,17 @@ failover. Callers never see which tier answered.
 
 ![architecture](docs/assets/modelplane-x-k8s.png)
 
+### Architecture deepdive
+
+![architecture deepdive](docs/assets/architecture-v2.svg)
+
+Callers send `"model": "ml-team/chat"` to the Envoy AI gateway on the
+fleet cluster; it tries the fleet's vLLM replica first (P0) and retries
+the same request against Claude's API (P1) when the fleet can't answer.
+Everything on both clusters is reconciled by Crossplane from three
+declarative objects on the control cluster: `ModelDeployment`,
+`ModelService`, and `ModelEndpoint`.
+
 **Requires:** Apple Silicon Mac, 24GB RAM, ~40GB disk, [Homebrew](https://brew.sh).
 Everything else is installed for you; all compute stays inside the VMs.
 Optional: an `ANTHROPIC_API_KEY` for the Claude failover tier (stored only
